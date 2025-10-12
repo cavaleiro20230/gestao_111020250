@@ -5,7 +5,7 @@ import useAccountabilityData from '../../hooks/useAccountabilityData';
 import { generateAccountabilityPDF } from '../../services/reportService';
 import ProjectRiskAnalysis from '../ProjectRiskAnalysis';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { ArrowLeftOnRectangleIcon } from '../icons';
+import { ArrowLeftOnRectangleIcon, Bars3Icon } from '../icons';
 
 const COLORS = ['#0d9488', '#0ea5e9', '#f97316', '#8b5cf6', '#ec4899', '#f43f5e', '#84cc16'];
 
@@ -13,6 +13,7 @@ const FunderPortalPage: React.FC = () => {
     const appContext = useContext(AppContext);
     const authContext = useContext(AuthContext);
     const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     if (!appContext || !authContext || !authContext.user) {
         return <div className="p-8">Carregando...</div>;
@@ -44,16 +45,22 @@ const FunderPortalPage: React.FC = () => {
     const formatDate = (dateString?: string) => dateString ? new Date(dateString).toLocaleDateString('pt-BR', {timeZone: 'UTC'}) : 'N/A';
 
     return (
-        <div className="flex h-screen bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+        <div className="relative min-h-screen md:flex bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+            {/* Overlay for mobile */}
+            {isSidebarOpen && <div onClick={() => setIsSidebarOpen(false)} className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden" />}
+
             {/* Sidebar */}
-            <aside className="w-64 bg-white dark:bg-slate-800 p-4 border-r border-slate-200 dark:border-slate-700 flex flex-col">
+            <aside className={`fixed inset-y-0 left-0 z-30 w-64 bg-white dark:bg-slate-800 p-4 border-r border-slate-200 dark:border-slate-700 flex flex-col transition-transform duration-300 ease-in-out transform md:relative md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                  <h1 className="text-2xl font-bold text-teal-600 dark:text-teal-400 mb-6">Portal de Transparência da FEMAR</h1>
                  <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">Seus Projetos</h2>
                  <nav className="flex-1 space-y-2">
                      {funderProjects.map(p => (
                          <button
                              key={p.id}
-                             onClick={() => setSelectedProjectId(p.id)}
+                             onClick={() => {
+                                 setSelectedProjectId(p.id);
+                                 setIsSidebarOpen(false);
+                             }}
                              className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${selectedProjectId === p.id ? 'bg-teal-100 dark:bg-teal-900/50 text-teal-700 dark:text-teal-300' : 'hover:bg-slate-100 dark:hover:bg-slate-700'}`}
                          >
                              {p.name}
@@ -73,7 +80,15 @@ const FunderPortalPage: React.FC = () => {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 overflow-y-auto p-8">
+            <main className="flex-1 overflow-y-auto p-4 md:p-8">
+                 {/* Mobile Header with Hamburger */}
+                <div className="md:hidden flex justify-between items-center mb-4">
+                    <button onClick={() => setIsSidebarOpen(true)} className="p-2 rounded-md bg-slate-200 dark:bg-slate-700">
+                        <Bars3Icon className="w-6 h-6" />
+                    </button>
+                    <h1 className="text-lg font-bold text-teal-600">Portal FEMAR</h1>
+                </div>
+
                 {!selectedProject ? (
                      <div className="text-center py-20">
                         <h2 className="text-2xl font-semibold">Bem-vindo(a)</h2>
@@ -81,14 +96,14 @@ const FunderPortalPage: React.FC = () => {
                     </div>
                 ) : (
                     <div>
-                        <div className="flex justify-between items-start mb-6">
+                        <div className="flex flex-col md:flex-row justify-between items-start mb-6 gap-4">
                             <div>
                                 <h2 className="text-3xl font-bold">{selectedProject.name}</h2>
                                 <p className="text-slate-500">{selectedProject.clientName}</p>
                             </div>
                             <button
                                 onClick={() => generateAccountabilityPDF(selectedProject, projectData)}
-                                className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors shadow-sm"
+                                className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors shadow-sm w-full md:w-auto"
                             >
                                 Baixar Prestação de Contas
                             </button>

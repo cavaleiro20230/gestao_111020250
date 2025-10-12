@@ -21,6 +21,7 @@ export const ClockIcon = createIcon();
 export const UsersIcon = createIcon();
 export const PaperAirplaneIcon = createIcon();
 export const Bars4Icon = createIcon();
+export const Bars3Icon = createIcon(<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>);
 export const CubeIcon = createIcon();
 export const ClipboardDocumentListIcon = createIcon();
 export const ArrowDownTrayIcon = createIcon();
