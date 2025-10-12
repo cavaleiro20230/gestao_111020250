@@ -27,7 +27,6 @@ const DREReportPage: React.FC = () => {
             // By casting the initial value `{}` to `Record<string, number>`, we ensure that `expensesByCategory`
             // and its derived values (`totalExpenses`, `netResult`, and the `value` in the map function)
             // are correctly typed as `number`, resolving all downstream type errors.
-            // FIX: Cast initial value of reduce to `Record<string, number>` to fix type inference issue, which resolves multiple downstream errors.
             }, {} as Record<string, number>);
         
         const totalExpenses = Object.values(expensesByCategory).reduce((sum, value) => sum + value, 0);

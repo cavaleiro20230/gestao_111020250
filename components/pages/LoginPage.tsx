@@ -13,9 +13,11 @@ const LoginPage: React.FC = () => {
         e.preventDefault();
         setError('');
         if (authContext) {
-            const success = authContext.login(email, password);
-            if (!success) {
+            const result = authContext.login(email, password);
+            if (result === 'invalid') {
                 setError('Credenciais inválidas. Tente novamente.');
+            } else if (result === 'blocked') {
+                setError('Este usuário está bloqueado. Entre em contato com o administrador.');
             }
         }
     };

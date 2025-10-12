@@ -13,7 +13,7 @@ interface UserModalProps {
 
 const UserModal: React.FC<UserModalProps> = ({ user, onClose, onSave }) => {
   const [formData, setFormData] = useState<User>(
-    user || { id: uuidv4(), name: '', email: '', role: 'project_manager', position: '', department: 'Técnica', password: '' }
+    user || { id: uuidv4(), name: '', email: '', role: 'project_manager', position: '', department: 'Técnica', password: '', status: 'active' }
   );
   const [isFormValid, setIsFormValid] = useState(false);
 
@@ -42,7 +42,7 @@ const UserModal: React.FC<UserModalProps> = ({ user, onClose, onSave }) => {
   };
 
   return (
-    <Modal isOpen={true} onClose={onClose} title={user ? 'Editar Pessoal' : 'Novo Pessoal'}>
+    <Modal isOpen={true} onClose={onClose} title={user ? 'Editar Usuário' : 'Novo Usuário'}>
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
           <div>
@@ -83,6 +83,13 @@ const UserModal: React.FC<UserModalProps> = ({ user, onClose, onSave }) => {
                 <option value="coordinator">Coordenador</option>
                 <option value="inspector">Fiscal</option>
                 <option value="employee">Colaborador</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="status" className="block text-sm font-medium text-slate-700 dark:text-slate-300">Status</label>
+            <select name="status" id="status" value={formData.status} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm bg-white dark:bg-slate-700">
+                <option value="active">Ativo</option>
+                <option value="blocked">Bloqueado</option>
             </select>
           </div>
         </div>

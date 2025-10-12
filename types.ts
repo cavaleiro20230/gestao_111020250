@@ -36,6 +36,9 @@ export interface ExecutiveSummaryData {
 
 export type UserRole = 'admin' | 'finance' | 'project_manager' | 'superintendent' | 'coordinator' | 'inspector' | 'employee' | 'funder';
 
+export const USER_ROLES: UserRole[] = ['admin', 'finance', 'project_manager', 'superintendent', 'coordinator', 'inspector', 'employee', 'funder'];
+
+
 export interface User {
     id: string;
     name: string;
@@ -46,6 +49,7 @@ export interface User {
     department: string;
     clientId?: string; // For funder users
     type?: 'internal' | 'external';
+    status: 'active' | 'blocked';
 }
 
 export interface Personnel {
@@ -669,6 +673,7 @@ export enum Page {
     GrantManagement,
     Approvals,
     OKRs,
+    Security,
     // Report Sub-pages
     CashFlowReport,
     DREReport,
@@ -756,6 +761,7 @@ export type AppContextType = {
     otherConfig: OtherConfig;
     accountingConfig: AccountingConfig;
     pageMappings: Record<string, Page>;
+    rolePermissions: Record<UserRole, Page[]>;
 
     // Setters & Handlers
     setActivePage: (page: Page, context?: any) => void;
@@ -855,6 +861,8 @@ export type AppContextType = {
     handleSaveFinancialConfig: (config: FinancialConfig) => void;
     handleSaveOtherConfig: (config: OtherConfig) => void;
     handleSaveAccountingConfig: (config: AccountingConfig) => void;
+    handleUpdateRolePermissions: (role: UserRole, page: Page, hasAccess: boolean) => void;
+
 
     handleExecuteFunctionCall: (call: any) => Promise<{ success: boolean; message: string }>;
 };
@@ -862,6 +870,6 @@ export type AppContextType = {
 
 export interface AuthContextType {
   user: User | null;
-  login: (email: string, pass: string) => boolean;
+  login: (email: string, pass: string) => 'success' | 'invalid' | 'blocked';
   logout: () => void;
 }

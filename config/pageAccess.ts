@@ -21,6 +21,8 @@ export const pageAccess: Record<Page, UserRole[]> = {
     
     [Page.Projects]: ['admin', 'project_manager', 'superintendent', 'coordinator', 'inspector', 'employee'],
     [Page.ProjectBoard]: ['admin', 'project_manager', 'superintendent', 'coordinator', 'inspector', 'employee'],
+    // FIX: Add missing 'ProjectDetail' page to the page access configuration.
+    [Page.ProjectDetail]: ['admin', 'project_manager', 'superintendent', 'coordinator', 'inspector', 'employee'],
     
     [Page.GrantManagement]: ['admin', 'project_manager', 'superintendent', 'coordinator'],
     [Page.GrantDetail]: ['admin', 'project_manager', 'superintendent', 'coordinator'],
@@ -51,6 +53,7 @@ export const pageAccess: Record<Page, UserRole[]> = {
     
     [Page.Registrations]: ['admin', 'finance', 'project_manager', 'superintendent', 'coordinator'],
     [Page.Configuration]: ['admin'],
+    [Page.Security]: ['admin'],
     [Page.AccountingConfiguration]: ['admin'],
 
     // Legacy/Unused

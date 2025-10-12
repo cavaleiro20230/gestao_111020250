@@ -38,7 +38,7 @@ import {
     INITIAL_ONBOARDING,
     INITIAL_PERFORMANCE_REVIEWS, INITIAL_REPORTS, INITIAL_MATERIAL_REQUESTS,
     INITIAL_BUDGETS, INITIAL_ASSETS, INITIAL_GRANTS, INITIAL_COMPLIANCE_OBLIGATIONS,
-    INITIAL_NOTIFICATIONS, INITIAL_ACCOUNTING_BATCHES
+    INITIAL_NOTIFICATIONS, INITIAL_ACCOUNTING_BATCHES, INITIAL_ROLE_PERMISSIONS
 } from './services/initialData';
 
 // Page Components
@@ -63,6 +63,7 @@ import BudgetingPage from './components/pages/BudgetingPage';
 import GrantManagementPage from './components/pages/GrantManagementPage';
 import ApprovalsPage from './components/pages/ApprovalsPage';
 import OKRsPage from './components/pages/OKRsPage';
+import SecurityPage from './components/pages/SecurityPage';
 import AccountsPayablePage from './components/pages/finance/AccountsPayablePage';
 import AccountsReceivablePage from './components/pages/finance/AccountsReceivablePage';
 import BillingPage from './components/pages/BillingPage';
@@ -142,6 +143,8 @@ const AppContent: React.FC = () => {
     const [complianceObligations, setComplianceObligations] = useLocalStorage<ComplianceObligation[]>('complianceObligations', INITIAL_COMPLIANCE_OBLIGATIONS);
     const [notifications, setNotifications] = useLocalStorage<Notification[]>('notifications', INITIAL_NOTIFICATIONS);
     const [accountingBatches, setAccountingBatches] = useLocalStorage<AccountingBatch[]>('accountingBatches', INITIAL_ACCOUNTING_BATCHES);
+    const [rolePermissions, setRolePermissions] = useLocalStorage<Record<UserRole, Page[]>>('rolePermissions', INITIAL_ROLE_PERMISSIONS);
+
 
     const [companyConfig, setCompanyConfig] = useLocalStorage<CompanyConfig>('companyConfig', { name: 'FEMAR', cnpj: '00.000.000/0001-00', address: 'Rua Exemplo, 123', phone: '(99) 99999-9999', email: 'contato@femar.com' });
     const [fiscalConfig, setFiscalConfig] = useLocalStorage<FiscalConfig>('fiscalConfig', { taxRegime: 'Lucro Presumido', icmsRate: 18, pisCofinsRate: 3.65, enableNfse: true });
@@ -216,10 +219,32 @@ const AppContent: React.FC = () => {
         setActivePage(page);
         setPageContext(contextData);
     };
+
+    const handleUpdateRolePermissions = (role: UserRole, page: Page, hasAccess: boolean) => {
+        if (role === 'admin') return; // Admin permissions cannot be changed
+
+        setRolePermissions(prev => {
+            const currentPermissions = prev[role] || [];
+            let newPermissions;
+
+            if (hasAccess) {
+                if (!currentPermissions.includes(page)) {
+                    newPermissions = [...currentPermissions, page];
+                } else {
+                    newPermissions = currentPermissions;
+                }
+            } else {
+                newPermissions = currentPermissions.filter(p => p !== page);
+            }
+            return { ...prev, [role]: newPermissions };
+        });
+        showToast(`Permissões para ${role} atualizadas.`, 'success');
+    };
+
     
     // Auth Check
     const userRole = authContext?.user?.role;
-    const canAccess = userRole && pageAccess[activePage]?.includes(userRole);
+    const canAccess = userRole === 'admin' || (userRole && rolePermissions[userRole]?.includes(activePage));
     
     const { handleSave: handleSaveClient, handleDelete: handleDeleteClient } = createCrudHandlers(clients, setClients, 'Cliente');
     const { handleSave: handleSaveProduct, handleDelete: handleDeleteProduct } = createCrudHandlers(products, setProducts, 'Produto');
@@ -518,6 +543,7 @@ const AppContent: React.FC = () => {
         [Page.GrantManagement]: GrantManagementPage,
         [Page.Approvals]: ApprovalsPage,
         [Page.OKRs]: OKRsPage,
+        [Page.Security]: SecurityPage,
         [Page.AccountsPayable]: AccountsPayablePage,
         [Page.AccountsReceivable]: AccountsReceivablePage,
         [Page.Billing]: BillingPage,
@@ -553,7 +579,7 @@ const AppContent: React.FC = () => {
         personnel, timesheetEntries, batches, shipments, purchaseOrders, salesOrders, auditLogs, bankIntegrations, bankStatementLines,
         approvalWorkflows, approvalInstances, holidayRequests, travelRequests, onboardingProcesses, performanceReviews, customReports,
         materialRequests, purchaseRequisitions, budgets, assets, depreciationHistory, grants, complianceObligations, notifications, accountingBatches,
-        companyConfig, fiscalConfig, financialConfig, otherConfig, accountingConfig, pageMappings,
+        companyConfig, fiscalConfig, financialConfig, otherConfig, accountingConfig, pageMappings, rolePermissions,
         
         setActivePage: handleSetActivePage,
         handleSaveClient, handleDeleteClient, handleSaveProduct, handleDeleteProduct, handleSaveService, handleDeleteService,
@@ -586,6 +612,7 @@ const AppContent: React.FC = () => {
         handleSaveFinancialConfig: setFinancialConfig,
         handleSaveOtherConfig: setOtherConfig,
         handleSaveAccountingConfig: setAccountingConfig,
+        handleUpdateRolePermissions,
         handleExecuteFunctionCall
     };
 
@@ -620,14 +647,16 @@ const App: React.FC = () => {
     const [users, setUsers] = useLocalStorage<User[]>('users', INITIAL_USERS);
     const [currentUser, setCurrentUser] = useLocalStorage<User | null>('currentUser', null);
     
-    const login = (email: string, pass: string): boolean => {
+    const login = (email: string, pass: string): 'success' | 'invalid' | 'blocked' => {
         const user = users.find(u => u.email === email && u.password === pass);
         if (user) {
+            if (user.status === 'blocked') {
+                return 'blocked';
+            }
             setCurrentUser(user);
-            // setAuditLogs... This should be inside AppContext
-            return true;
+            return 'success';
         }
-        return false;
+        return 'invalid';
     };
     
     const logout = () => {

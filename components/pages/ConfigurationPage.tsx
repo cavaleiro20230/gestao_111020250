@@ -7,7 +7,6 @@ import FinancialConfigForm from './configuration/FinancialConfigForm';
 import OtherConfigForm from './configuration/OtherConfigForm';
 import Card from '../Card';
 import Header from '../Header';
-import PersonnelManagementPage from './configuration/UserManagementPage';
 import AuditTrailPage from './AuditTrailPage';
 import BankIntegrationsForm from './configuration/BankIntegrationsForm';
 import { ShieldCheckIcon, LinkIcon, ArrowPathIcon, DocumentTextIcon } from '../icons';
@@ -15,7 +14,7 @@ import WorkflowConfigPage from './configuration/WorkflowConfigPage';
 import { Page } from '../../types';
 import ChartOfAccountsManagementPage from './configuration/ChartOfAccountsManagementPage';
 
-type ConfigView = 'main' | 'company' | 'fiscal' | 'financial' | 'other' | 'users' | 'audit' | 'integrations' | 'workflows' | 'chartOfAccounts';
+type ConfigView = 'main' | 'company' | 'fiscal' | 'financial' | 'other' | 'audit' | 'integrations' | 'workflows' | 'chartOfAccounts';
 
 const ConfigurationPage: React.FC = () => {
     const [view, setView] = useState<ConfigView>('main');
@@ -41,8 +40,6 @@ const ConfigurationPage: React.FC = () => {
                 return <FinancialConfigForm config={financialConfig} onSave={handleSaveFinancialConfig} onBack={() => setView('main')} />;
             case 'other':
                 return <OtherConfigForm config={otherConfig} onSave={handleSaveOtherConfig} onBack={() => setView('main')} />;
-            case 'users':
-                return <PersonnelManagementPage onBack={() => setView('main')} />;
             case 'audit':
                 return <AuditTrailPage onBack={() => setView('main')} />;
             case 'integrations':
@@ -77,10 +74,6 @@ const ConfigurationPage: React.FC = () => {
                              <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setView('other')}>
                                 <h3 className="font-semibold text-lg">Outras</h3>
                                 <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Gerencie centros de custo e condições de pagamento.</p>
-                            </Card>
-                             <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setView('users')}>
-                                <h3 className="font-semibold text-lg">Pessoal</h3>
-                                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Gerencie pessoal e permissões de acesso.</p>
                             </Card>
                              <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setView('audit')}>
                                 <ShieldCheckIcon className="w-6 h-6 mb-2 text-teal-600 dark:text-teal-400"/>

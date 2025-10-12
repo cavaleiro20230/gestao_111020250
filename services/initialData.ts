@@ -9,18 +9,21 @@ import {
     CustomReport, MaterialRequest, Budget, Asset, Grant, ComplianceObligation, Notification,
     AccountingBatch,
     // FIX: Import the new types to be used in initial data arrays.
-    TravelRequest, PurchaseRequisition
+    TravelRequest, PurchaseRequisition,
+    UserRole, Page, USER_ROLES
 } from '../types';
+import { pageAccess } from '../config/pageAccess';
+
 
 export const INITIAL_USERS: User[] = [
-    { id: 'user-1', name: 'Alice Admin', email: 'admin@femar.com', password: 'password', role: 'admin', position: 'Administradora', department: 'Administrativo', type: 'internal' },
-    { id: 'user-2', name: 'Beatriz Finanças', email: 'finance@femar.com', password: 'password', role: 'finance', position: 'Analista Financeira', department: 'Financeiro', type: 'internal' },
-    { id: 'user-3', name: 'Carlos Gerente', email: 'project@femar.com', password: 'password', role: 'project_manager', position: 'Gerente de Projetos', department: 'Projetos', type: 'internal' },
-    { id: 'user-4', name: 'Daniel Superintendente', email: 'super@femar.com', password: 'password', role: 'superintendent', position: 'Superintendente', department: 'Diretoria', type: 'internal' },
-    { id: 'user-5', name: 'Eduarda Coordenadora', email: 'coord@femar.com', password: 'password', role: 'coordinator', position: 'Coordenadora de Ensino', department: 'Ensino', type: 'internal' },
-    { id: 'user-6', name: 'Fábio Fiscal', email: 'fiscal@femar.com', password: 'password', role: 'inspector', position: 'Fiscal de Contrato', department: 'Projetos', type: 'internal' },
-    { id: 'user-7', name: 'Gabriel Colaborador', email: 'colab@femar.com', password: 'password', role: 'employee', position: 'Pesquisador', department: 'Técnica', type: 'internal' },
-    { id: 'user-8', name: 'Helena FAP', email: 'helena@fap.org.br', password: 'fap', role: 'funder', position: 'Analista de Fomento', department: 'FAP', clientId: 'client-2', type: 'external' },
+    { id: 'user-1', name: 'Alice Admin', email: 'admin@femar.com', password: 'password', role: 'admin', position: 'Administradora', department: 'Administrativo', type: 'internal', status: 'active' },
+    { id: 'user-2', name: 'Beatriz Finanças', email: 'finance@femar.com', password: 'password', role: 'finance', position: 'Analista Financeira', department: 'Financeiro', type: 'internal', status: 'active' },
+    { id: 'user-3', name: 'Carlos Gerente', email: 'project@femar.com', password: 'password', role: 'project_manager', position: 'Gerente de Projetos', department: 'Projetos', type: 'internal', status: 'active' },
+    { id: 'user-4', name: 'Daniel Superintendente', email: 'super@femar.com', password: 'password', role: 'superintendent', position: 'Superintendente', department: 'Diretoria', type: 'internal', status: 'active' },
+    { id: 'user-5', name: 'Eduarda Coordenadora', email: 'coord@femar.com', password: 'password', role: 'coordinator', position: 'Coordenadora de Ensino', department: 'Ensino', type: 'internal', status: 'active' },
+    { id: 'user-6', name: 'Fábio Fiscal', email: 'fiscal@femar.com', password: 'password', role: 'inspector', position: 'Fiscal de Contrato', department: 'Projetos', type: 'internal', status: 'active' },
+    { id: 'user-7', name: 'Gabriel Colaborador', email: 'colab@femar.com', password: 'password', role: 'employee', position: 'Pesquisador', department: 'Técnica', type: 'internal', status: 'active' },
+    { id: 'user-8', name: 'Helena FAP', email: 'helena@fap.org.br', password: 'fap', role: 'funder', position: 'Analista de Fomento', department: 'FAP', clientId: 'client-2', type: 'external', status: 'active' },
 ];
 
 export const INITIAL_CLIENTS: Client[] = [
@@ -120,3 +123,25 @@ export const INITIAL_GRANTS: Grant[] = [];
 export const INITIAL_COMPLIANCE_OBLIGATIONS: ComplianceObligation[] = [];
 export const INITIAL_NOTIFICATIONS: Notification[] = [];
 export const INITIAL_ACCOUNTING_BATCHES: AccountingBatch[] = [];
+
+
+function transformPageAccessToRolePermissions(): Record<UserRole, Page[]> {
+    const rolePermissions: Record<UserRole, Page[]> = {} as Record<UserRole, Page[]>;
+
+    for (const role of USER_ROLES) {
+        rolePermissions[role] = [];
+    }
+
+    for (const pageStr in pageAccess) {
+        const page = parseInt(pageStr) as Page;
+        const allowedRoles = pageAccess[page];
+        for (const role of allowedRoles) {
+            if (rolePermissions[role]) {
+                rolePermissions[role].push(page);
+            }
+        }
+    }
+    return rolePermissions;
+}
+
+export const INITIAL_ROLE_PERMISSIONS = transformPageAccessToRolePermissions();

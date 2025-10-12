@@ -78,6 +78,11 @@ const menuConfig: NavMenuItem[] = [
             { label: 'Cadastros Gerais', page: Page.Registrations, roles: pageAccess[Page.Registrations] },
             { label: 'Configurações', page: Page.Configuration, roles: pageAccess[Page.Configuration] },
         ]
+    },
+    {
+        label: 'Central de Segurança',
+        page: Page.Security,
+        roles: ['admin'],
     }
 ];
 
@@ -105,7 +110,7 @@ const PrimaryNavbar: React.FC<{ onSearchClick: () => void }> = ({ onSearchClick 
     if (!authContext || !appContext || !authContext.user) return null;
 
     const { user, logout } = authContext;
-    const { notifications, handleNotificationClick, setActivePage } = appContext;
+    const { notifications, handleNotificationClick, setActivePage, rolePermissions } = appContext;
     const { role: userRole } = user;
 
     const unreadCount = notifications.filter(n => n.userId === user?.id && !n.read).length;
@@ -130,11 +135,26 @@ const PrimaryNavbar: React.FC<{ onSearchClick: () => void }> = ({ onSearchClick 
     }
     
     const accessibleMenuItems = menuConfig
-        .filter(item => item.roles.some(role => role === userRole))
-        .map(item => ({
-            ...item,
-            subItems: item.subItems?.filter(subItem => subItem.roles.includes(userRole))
-        }));
+        .map(item => {
+            if (userRole === 'admin') {
+                return item; // Admin vê todos os menus configurados
+            }
+
+            if (item.page !== undefined) {
+                // É um link direto
+                return rolePermissions[userRole]?.includes(item.page) ? item : null;
+            } else if (item.subItems) {
+                // É um dropdown, verifica se há subitens acessíveis
+                const accessibleSubItems = item.subItems.filter(sub => rolePermissions[userRole]?.includes(sub.page));
+                if (accessibleSubItems.length > 0) {
+                    return { ...item, subItems: accessibleSubItems };
+                }
+                return null; // Oculta o dropdown se não houver subitens acessíveis
+            }
+            return null;
+        })
+        .filter((item): item is NavMenuItem => item !== null);
+
 
     return (
         <div ref={navRef} className="flex justify-between items-center px-4 bg-slate-800 text-slate-300 h-16 flex-shrink-0 shadow-md z-30">
