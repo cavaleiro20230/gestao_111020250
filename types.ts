@@ -3,6 +3,9 @@
 // FIX: Create the types.ts file with all the necessary type definitions for the application.
 // This resolves a large number of module and type errors across the project.
 
+// FIX: Import types from React to resolve namespace errors.
+import type { Dispatch, SetStateAction } from 'react';
+
 export interface FinancialData {
   monthlyPerformance: { name: string; revenue: number; expenses: number }[];
   topExpenseCategories: { name: string; value: number }[];
@@ -898,4 +901,7 @@ export interface AuthContextType {
   user: User | null;
   login: (email: string, pass: string) => 'success' | 'invalid' | 'blocked';
   logout: () => void;
+  users: User[];
+  // FIX: Use imported Dispatch and SetStateAction types to resolve namespace error.
+  setUsers: Dispatch<SetStateAction<User[]>>;
 }

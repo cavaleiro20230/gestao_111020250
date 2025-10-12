@@ -74,8 +74,8 @@ const ClientModal: React.FC<ClientModalProps> = ({ client, onClose, onSave }) =>
   const [cnpjError, setCnpjError] = useState<string | null>(null);
 
   useEffect(() => {
-    const { name, email } = formData;
-    setIsFormValid(!!name.trim() && !!email.trim());
+    const { name, email, cnpj } = formData;
+    setIsFormValid(!!name.trim() && !!email.trim() && isValidCnpj(cnpj));
   }, [formData]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -123,6 +123,10 @@ const ClientModal: React.FC<ClientModalProps> = ({ client, onClose, onSave }) =>
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isValidCnpj(formData.cnpj)) {
+      setCnpjError('CNPJ inválido. Verifique o número e tente novamente.');
+      return;
+    }
     if (isFormValid) {
         onSave(formData);
         onClose();
@@ -142,6 +146,7 @@ const ClientModal: React.FC<ClientModalProps> = ({ client, onClose, onSave }) =>
                     id="cnpj" 
                     value={formData.cnpj} 
                     onChange={handleChange} 
+                    required
                     className="block w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm bg-white dark:bg-slate-700 pr-10"
                     placeholder="Digite o CNPJ e clique na lupa"
                 />

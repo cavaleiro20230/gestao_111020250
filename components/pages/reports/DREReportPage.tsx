@@ -19,15 +19,14 @@ const DREReportPage: React.FC = () => {
 
         const expensesByCategory = accountsPayable
             .filter(ap => ap.status === 'Pago' && ap.paymentDate && new Date(ap.paymentDate).getFullYear() === selectedYear)
-            .reduce((acc, ap) => {
+            // FIX: All errors in this file are caused by incorrect type inference in the `reduce` function.
+            // By explicitly typing the accumulator `acc`, we ensure that `expensesByCategory`
+            // and its derived values are correctly typed as `number`, resolving all downstream type errors.
+            .reduce((acc: Record<string, number>, ap) => {
                 const category = ap.category || 'Outras Despesas';
                 acc[category] = (acc[category] || 0) + ap.value;
                 return acc;
-            // FIX: All errors in this file are caused by incorrect type inference in the `reduce` function.
-            // By casting the initial value `{}` to `Record<string, number>`, we ensure that `expensesByCategory`
-            // and its derived values (`totalExpenses`, `netResult`, and the `value` in the map function)
-            // are correctly typed as `number`, resolving all downstream type errors.
-            }, {} as Record<string, number>);
+            }, {});
         
         const totalExpenses = Object.values(expensesByCategory).reduce((sum, value) => sum + value, 0);
         const netResult = revenues - totalExpenses;
