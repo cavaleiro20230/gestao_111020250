@@ -19,15 +19,15 @@ export default defineConfig(({ mode }) => {
                 '@': path.resolve(__dirname, '.'),
             }
         },
-        // --- INÍCIO DAS MUDANÇAS DE OTIMIZAÇÃO ---
+        // --- ADIÇÃO DE OTIMIZAÇÃO DE CHUNKS ---
         build: {
-            // 1. Aumenta o limite de aviso para 1000 kB (1 MB)
+            // Aumenta o limite de aviso de tamanho do chunk para 1000 kB (1 MB)
+            // Isso irá suprimir o aviso para chunks entre 500kB e 1MB.
             chunkSizeWarningLimit: 1000, 
             rollupOptions: {
                 output: {
-                    // 2. Separa bibliotecas de terceiros em um chunk 'vendor'
+                    // Separa todas as dependências de node_modules em um único 'vendor.js'
                     manualChunks(id) {
-                        // Se o módulo vem de 'node_modules', ele é agrupado como 'vendor'
                         if (id.includes('node_modules')) {
                             return 'vendor';
                         }
@@ -35,6 +35,6 @@ export default defineConfig(({ mode }) => {
                 },
             },
         }
-        // --- FIM DAS MUDANÇAS DE OTIMIZAÇÃO ---
+        // ------------------------------------------
     };
 });
