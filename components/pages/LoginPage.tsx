@@ -29,10 +29,10 @@ const LoginPage: React.FC = () => {
                     <h1 className="text-4xl font-bold text-teal-600 dark:text-teal-400">FEMAR</h1>
                     <p className="text-slate-500 dark:text-slate-400">Sistema de Gestão para Fundações</p>
                  </div>
-                <Card>
+                <Card className="bg-slate-800">
                     <form onSubmit={handleSubmit} className="space-y-6">
                          <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-slate-700 dark:text-slate-300">Email</label>
+                            <label htmlFor="email" className="block text-sm font-medium text-slate-300">Email</label>
                             <div className="mt-1">
                                 <input
                                     id="email"
@@ -42,13 +42,13 @@ const LoginPage: React.FC = () => {
                                     required
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-slate-700"
+                                    className="w-full px-3 py-2 border border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 bg-slate-700 text-slate-200 placeholder-slate-400"
                                 />
                             </div>
                         </div>
 
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-slate-700 dark:text-slate-300">Senha</label>
+                            <label htmlFor="password" className="block text-sm font-medium text-slate-300">Senha</label>
                             <div className="mt-1">
                                 <input
                                     id="password"
@@ -58,12 +58,12 @@ const LoginPage: React.FC = () => {
                                     required
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-slate-700"
+                                    className="w-full px-3 py-2 border border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 bg-slate-700 text-slate-200 placeholder-slate-400"
                                 />
                             </div>
                         </div>
 
-                        {error && <p className="text-sm text-red-600">{error}</p>}
+                        {error && <p className="text-sm text-red-400">{error}</p>}
 
                         <div>
                             <button
