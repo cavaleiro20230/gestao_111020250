@@ -153,6 +153,7 @@ export interface AccountReceivable {
     paymentDate?: string;
     costCenter?: string;
     reconciled: boolean;
+    invoiceId?: string;
 }
 
 export interface Contract {
@@ -366,6 +367,28 @@ export interface SalesOrderItem {
     itemName: string;
     quantity: number;
     unitPrice: number;
+}
+
+export interface InvoiceItem {
+    id: string;
+    description: string;
+    quantity: number;
+    unitPrice: number;
+    total: number;
+}
+
+export interface Invoice {
+    id: string;
+    invoiceNumber: number;
+    clientId: string;
+    clientName: string;
+    issueDate: string;
+    dueDate: string;
+    items: InvoiceItem[];
+    totalValue: number;
+    status: 'Pendente' | 'Paga' | 'Vencida' | 'Cancelada';
+    sourceType: 'salesOrder' | 'contract' | 'manual';
+    sourceId: string;
 }
 
 export interface AuditLog {
@@ -734,6 +757,7 @@ export type AppContextType = {
     shipments: Shipment[];
     purchaseOrders: PurchaseOrder[];
     salesOrders: SalesOrder[];
+    invoices: Invoice[];
     auditLogs: AuditLog[];
     bankIntegrations: BankIntegration[];
     bankStatementLines: BankStatementLine[];
@@ -812,6 +836,8 @@ export type AppContextType = {
     handleDeletePurchaseOrder: (id: string) => void;
     handleSaveSalesOrder: (order: SalesOrder) => void;
     handleDeleteSalesOrder: (id: string) => void;
+    handleGenerateInvoiceFromSalesOrder: (orderId: string) => void;
+    handleUpdateInvoiceStatus: (invoiceId: string, status: Invoice['status']) => void;
     handleAddTaskComment: (taskId: string, authorId: string, content: string) => void;
     handleUpdatePermissions: (docId: string, permissions: DocumentPermission[]) => void;
     handleUploadNewVersion: (docId: string, uploader: User, changeNotes: string, newContent: string) => void;

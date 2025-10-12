@@ -13,7 +13,7 @@ import {
     AccountReceivable, Contract, Project, ProjectTask, ProjectDeliverable,
     Document, DocumentPermission, DocumentVersion, Personnel, TimesheetEntry,
     CompanyConfig, FiscalConfig, FinancialConfig, OtherConfig, AccountingConfig,
-    Batch, Shipment, PurchaseOrder, SalesOrder, AuditLog, BankIntegration,
+    Batch, Shipment, PurchaseOrder, SalesOrder, Invoice, AuditLog, BankIntegration,
     BankStatementLine, ApprovalWorkflow, ApprovalInstance, HolidayRequest,
     // FIX: Import the new types to be used for state management.
     TravelRequest, PurchaseRequisition,
@@ -31,7 +31,7 @@ import {
     INITIAL_TIMESHEET_ENTRIES, INITIAL_FUNDING_SOURCES,
     INITIAL_BUDGET_ITEMS, INITIAL_CHART_OF_ACCOUNTS, INITIAL_BATCHES,
     INITIAL_SHIPMENTS, INITIAL_PURCHASE_ORDERS, INITIAL_SALES_ORDERS,
-    INITIAL_AUDIT_LOGS, INITIAL_BANK_INTEGRATIONS, INITIAL_BANK_STATEMENT_LINES,
+    INITIAL_INVOICES, INITIAL_AUDIT_LOGS, INITIAL_BANK_INTEGRATIONS, INITIAL_BANK_STATEMENT_LINES,
     INITIAL_WORKFLOWS, INITIAL_HOLIDAY_REQUESTS, 
     // FIX: Import the new initial data arrays.
     INITIAL_TRAVEL_REQUESTS, INITIAL_PURCHASE_REQUISITIONS,
@@ -122,6 +122,7 @@ const AppContent: React.FC = () => {
     const [shipments, setShipments] = useLocalStorage<Shipment[]>('shipments', INITIAL_SHIPMENTS);
     const [purchaseOrders, setPurchaseOrders] = useLocalStorage<PurchaseOrder[]>('purchaseOrders', INITIAL_PURCHASE_ORDERS);
     const [salesOrders, setSalesOrders] = useLocalStorage<SalesOrder[]>('salesOrders', INITIAL_SALES_ORDERS);
+    const [invoices, setInvoices] = useLocalStorage<Invoice[]>('invoices', INITIAL_INVOICES);
     const [auditLogs, setAuditLogs] = useLocalStorage<AuditLog[]>('auditLogs', INITIAL_AUDIT_LOGS);
     const [bankIntegrations, setBankIntegrations] = useLocalStorage<BankIntegration[]>('bankIntegrations', INITIAL_BANK_INTEGRATIONS);
     const [bankStatementLines, setBankStatementLines] = useLocalStorage<BankStatementLine[]>('bankStatementLines', INITIAL_BANK_STATEMENT_LINES);
@@ -299,6 +300,74 @@ const AppContent: React.FC = () => {
     const handleApproveTimesheetEntry = (id: string) => {
         setTimesheetEntries(prev => prev.map(e => e.id === id ? { ...e, status: 'Aprovado' } : e));
         addAuditLog('status_change', 'Apontamento de Horas', `Aprovou apontamento ${id}`, id);
+    };
+
+    const handleGenerateInvoiceFromSalesOrder = (orderId: string) => {
+        const order = salesOrders.find(o => o.id === orderId);
+        if (!order) {
+            showToast('Ordem de venda não encontrada.', 'error');
+            return;
+        }
+
+        const newInvoice: Invoice = {
+            id: uuidv4(),
+            invoiceNumber: new Date().getFullYear() * 10000 + (invoices.length + 1),
+            clientId: order.clientId,
+            clientName: order.clientName,
+            issueDate: new Date().toISOString().split('T')[0],
+            dueDate: new Date(new Date().setDate(new Date().getDate() + 30)).toISOString().split('T')[0], // 30 days default
+            items: order.items.map(item => ({
+                id: uuidv4(),
+                description: item.itemName,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+                total: item.quantity * item.unitPrice
+            })),
+            totalValue: order.totalValue,
+            status: 'Pendente',
+            sourceType: 'salesOrder',
+            sourceId: order.id,
+        };
+        
+        const newAccountReceivable: AccountReceivable = {
+            id: uuidv4(),
+            description: `Fatura #${newInvoice.invoiceNumber} - ${order.clientName}`,
+            category: 'Receita de Venda',
+            value: newInvoice.totalValue,
+            dueDate: newInvoice.dueDate,
+            status: 'Aberto',
+            reconciled: false,
+            invoiceId: newInvoice.id,
+        };
+
+        setInvoices(prev => [...prev, newInvoice]);
+        setSalesOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'Faturado' } : o));
+        setAccountsReceivable(prev => [...prev, newAccountReceivable]);
+
+        addAuditLog('create', 'Fatura', `Gerou fatura #${newInvoice.invoiceNumber} da OV #${order.orderNumber}`, newInvoice.id);
+        showToast(`Fatura #${newInvoice.invoiceNumber} gerada com sucesso!`, 'success');
+    };
+
+    const handleUpdateInvoiceStatus = (invoiceId: string, status: Invoice['status']) => {
+        setInvoices(prev => prev.map(inv => {
+            if (inv.id === invoiceId) {
+                // Update corresponding Account Receivable
+                setAccountsReceivable(ars => ars.map(ar => {
+                    if (ar.invoiceId === invoiceId) {
+                        return { 
+                            ...ar, 
+                            status: status === 'Paga' ? 'Pago' : (status === 'Cancelada' ? 'Vencido' : 'Aberto'), // simplified
+                            paymentDate: status === 'Paga' ? new Date().toISOString().split('T')[0] : undefined
+                        };
+                    }
+                    return ar;
+                }));
+                addAuditLog('status_change', 'Fatura', `Alterou status da fatura #${inv.invoiceNumber} para ${status}`, inv.id);
+                return { ...inv, status };
+            }
+            return inv;
+        }));
+        showToast(`Status da fatura alterado para ${status}.`, 'success');
     };
 
     const handleAddTaskComment = (taskId: string, authorId: string, content: string) => {
@@ -576,7 +645,7 @@ const AppContent: React.FC = () => {
     const contextValue: AppContextType = {
         activePage, pageContext, clients, products, services, suppliers, transporters, sellers, fundingSources, budgetItems, chartOfAccounts,
         accountsPayable, accountsReceivable, contracts, projects, projectTasks, projectDeliverables, documents, users: authContext.users,
-        personnel, timesheetEntries, batches, shipments, purchaseOrders, salesOrders, auditLogs, bankIntegrations, bankStatementLines,
+        personnel, timesheetEntries, batches, shipments, purchaseOrders, salesOrders, invoices, auditLogs, bankIntegrations, bankStatementLines,
         approvalWorkflows, approvalInstances, holidayRequests, travelRequests, onboardingProcesses, performanceReviews, customReports,
         materialRequests, purchaseRequisitions, budgets, assets, depreciationHistory, grants, complianceObligations, notifications, accountingBatches,
         companyConfig, fiscalConfig, financialConfig, otherConfig, accountingConfig, pageMappings, rolePermissions,
@@ -592,6 +661,7 @@ const AppContent: React.FC = () => {
         handleSavePersonnel, handleDeletePersonnel, handleSaveTimesheetEntry, handleDeleteTimesheetEntry, handleApproveTimesheetEntry,
         handleSaveBatch, handleDeleteBatch, handleSaveShipment, handleDeleteShipment,
         handleSavePurchaseOrder, handleDeletePurchaseOrder, handleSaveSalesOrder, handleDeleteSalesOrder,
+        handleGenerateInvoiceFromSalesOrder, handleUpdateInvoiceStatus,
         handleAddTaskComment, handleUpdatePermissions, handleUploadNewVersion,
         handleConnectBank, handleSyncBank, handleReconcileTransactions,
         handleSaveWorkflow, handleDeleteWorkflow, handleProcessApproval,

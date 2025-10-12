@@ -7,6 +7,8 @@ import { AppContext } from '../../../App';
 import { useToast } from '../../../contexts/ToastContext';
 import { suggestChartOfAccount } from '../../../services/geminiService';
 import { SparklesIcon, ExclamationTriangleIcon } from '../../icons';
+import Modal from '../../modals/Modal';
+import ChartOfAccountsTab from '../registrations/ChartOfAccountsTab';
 
 interface AccountingConfigFormProps {
     config: AccountingConfig;
@@ -20,9 +22,12 @@ const AccountingConfigForm: React.FC<AccountingConfigFormProps> = ({ config, onS
         ...config,
         payableCategoryMappings: config.payableCategoryMappings || []
     });
-    const [isLoadingAI, setIsLoadingAI] = useState<string | null>(null); // Store mapping ID being loaded
+    const [isLoadingAI, setIsLoadingAI] = useState<string | null>(null);
+    const [isAccountManagerOpen, setIsAccountManagerOpen] = useState(false);
     const context = useContext(AppContext);
     const { showToast } = useToast();
+    
+    if (!context) return null;
 
     const uniqueCategories = useMemo(() => {
         const categories = new Set(context?.accountsPayable.map(ap => ap.category) || []);
@@ -82,6 +87,7 @@ const AccountingConfigForm: React.FC<AccountingConfigFormProps> = ({ config, onS
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         onSave(formData);
+        showToast('Configurações salvas com sucesso!', 'success');
     };
 
     const inputClass = "mt-1 block w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm bg-white dark:bg-slate-700";
@@ -100,8 +106,19 @@ const AccountingConfigForm: React.FC<AccountingConfigFormProps> = ({ config, onS
                         </div>
 
                         <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-                            <h4 className="text-md font-semibold">Parametrização de Contas Padrão (De/Para)</h4>
-                            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Defina as contas padrão para a integração automática. Elas serão usadas caso nenhuma regra específica por categoria seja encontrada.</p>
+                             <div className="flex justify-between items-center mb-2">
+                                <div>
+                                    <h4 className="text-md font-semibold">Parametrização de Contas Padrão (De/Para)</h4>
+                                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Defina as contas padrão para a integração automática. Elas serão usadas caso nenhuma regra específica por categoria seja encontrada.</p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsAccountManagerOpen(true)}
+                                    className="px-3 py-1.5 text-sm bg-slate-200 dark:bg-slate-600 rounded-md hover:bg-slate-300 dark:hover:bg-slate-500 transition-colors flex-shrink-0"
+                                >
+                                    Gerenciar Plano de Contas
+                                </button>
+                            </div>
                         </div>
                         
                         <fieldset className="p-4 border border-slate-200 dark:border-slate-600 rounded-lg">
@@ -158,7 +175,6 @@ const AccountingConfigForm: React.FC<AccountingConfigFormProps> = ({ config, onS
                                                     className={inputClass}
                                                 >
                                                     <option value="" disabled>Selecione a categoria</option>
-                                                    {/* FIX: Explicitly type `cat` as `string` to resolve TypeScript inference error. */}
                                                     {uniqueCategories.map((cat: string) => <option key={cat} value={cat}>{cat}</option>)}
                                                 </select>
                                             </div>
@@ -182,7 +198,7 @@ const AccountingConfigForm: React.FC<AccountingConfigFormProps> = ({ config, onS
                                                         onClick={() => handleSuggest(mapping.id, mapping.category)}
                                                         className="p-2 bg-sky-100 text-sky-600 dark:bg-sky-900/50 dark:text-sky-300 rounded-md hover:bg-sky-200 disabled:opacity-50"
                                                     >
-                                                        {isLoadingAI === mapping.id ? <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-500"></div> : <SparklesIcon className="w-5 h-5" />}
+                                                        {isLoadingAI === mapping.id ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-sky-500"></div> : <SparklesIcon className="w-5 h-5" />}
                                                     </button>
                                                 </div>
                                                 {selectedAccount && selectedAccount.type !== 'Despesa' && (
@@ -221,6 +237,15 @@ const AccountingConfigForm: React.FC<AccountingConfigFormProps> = ({ config, onS
                     </div>
                 </form>
             </Card>
+            {isAccountManagerOpen && (
+                <Modal isOpen={true} onClose={() => setIsAccountManagerOpen(false)} title="Gerenciar Plano de Contas">
+                    <ChartOfAccountsTab 
+                        accounts={context.chartOfAccounts}
+                        onSave={context.handleSaveChartOfAccount}
+                        onDelete={context.handleDeleteChartOfAccount}
+                    />
+                </Modal>
+            )}
         </div>
     );
 };

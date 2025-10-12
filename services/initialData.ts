@@ -7,7 +7,7 @@ import {
     PurchaseOrder, SalesOrder, AuditLog, BankIntegration, BankStatementLine,
     ApprovalWorkflow, HolidayRequest, OnboardingProcess, PerformanceReview,
     CustomReport, MaterialRequest, Budget, Asset, Grant, ComplianceObligation, Notification,
-    AccountingBatch,
+    AccountingBatch, Invoice,
     // FIX: Import the new types to be used in initial data arrays.
     TravelRequest, PurchaseRequisition,
     UserRole, Page, USER_ROLES
@@ -104,6 +104,7 @@ export const INITIAL_BATCHES: Batch[] = [];
 export const INITIAL_SHIPMENTS: Shipment[] = [];
 export const INITIAL_PURCHASE_ORDERS: PurchaseOrder[] = [];
 export const INITIAL_SALES_ORDERS: SalesOrder[] = [];
+export const INITIAL_INVOICES: Invoice[] = [];
 export const INITIAL_AUDIT_LOGS: AuditLog[] = [];
 export const INITIAL_BANK_INTEGRATIONS: BankIntegration[] = [];
 export const INITIAL_BANK_STATEMENT_LINES: BankStatementLine[] = [];
