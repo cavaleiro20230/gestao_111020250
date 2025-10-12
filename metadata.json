@@ -1,0 +1,7 @@
+{
+  "name": "Sistema de Gestão FEMAR backup 11/10/2025",
+  "description": "Uma solução de gestão integrada para a Fundação de Estudos do Mar, para administrar projetos, faturamento e finanças, com um assistente de IA para insights inteligentes.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
